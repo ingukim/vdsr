@@ -27,16 +27,16 @@ model_path = args.model_path
 TEST_DATA_PATH = "./data/test/"
 
 def get_train_list(data_path):
-	l = glob.glob(os.path.join(data_path,"*")) #os.path.join (경로 통합) , "*" = 무슨 글자든, 몇 글자든 상관 없다
-    #glob.glob - 파일들의 목록을 뽑을 때 사용
-	print (len(l)) #287088    574176
-	l = [f for f in l if re.search("^\d+.mat$", os.path.basename(f))] #os.path.basename(path) -입력받은 경로의 가장 하위 컴포넌트를 리턴
-#basename('C:\\Python30\\tmp') -> 'tmp'   , re.search(pattern, string) - string에서 pattern과 매치하는 텍스트를 탐색한다(임의 지점 매치)
-	print (len(l)) #71772   143544
+	l = glob.glob(os.path.join(data_path,"*")) 
+    #glob.glob 
+	print (len(l))
+	l = [f for f in l if re.search("^\d+.mat$", os.path.basename(f))] 
+
+	print (len(l)) 
 	train_list = []
-	for f in l: #여기서 I값은 뭘 가졌는가(check)?
-		if os.path.exists(f): #os.path.exists - (파일 이나 폴더가 존재하는지 확인)
-			if os.path.exists(f[:-4]+"_2.mat"): train_list.append([f, f[:-4]+"_2.mat"])  #f[:-4]는 뭔가? 앞에서 4자리 , f[-4:] 뒤에서 4자리
+	for f in l: 
+		if os.path.exists(f): 
+			if os.path.exists(f[:-4]+"_2.mat"): train_list.append([f, f[:-4]+"_2.mat"])  
 			if os.path.exists(f[:-4]+"_3.mat"): train_list.append([f, f[:-4]+"_3.mat"])
 			if os.path.exists(f[:-4]+"_4.mat"): train_list.append([f, f[:-4]+"_4.mat"]) 
 	return train_list #train_list= *, *_2, *_3, *_4 ex) 0_2.mat , 0_3.mat, 0_4.mat
@@ -73,11 +73,11 @@ def get_test_image(test_list, offset, batch_size):
 		gt_list.append(gt_img[:,:,0])
 	return input_list, gt_list
 
-if __name__ == '__main__':  #VDSR.py에서만 실행되도록
+if __name__ == '__main__': 
 	train_list = get_train_list(DATA_PATH) #DATA_PATH="./data/train/"
 	
-	if not USE_QUEUE_LOADING: #True가 아니면 출력
-		print ("not use queue loading, just sequential loading...") #큐 로딩 사용 x, 순차적 로딩 사용
+	if not USE_QUEUE_LOADING: 
+		print ("not use queue loading, just sequential loading...") 
 
 
 		### WITHOUT ASYNCHRONOUS DATA LOADING ###
@@ -98,7 +98,7 @@ if __name__ == '__main__':  #VDSR.py에서만 실행되도록
 		q = tf.FIFOQueue(10000, [tf.float32, tf.float32], [[IMG_SIZE[0], IMG_SIZE[1], 1], [IMG_SIZE[0], IMG_SIZE[1], 1]]) #10000= Queue length
 		enqueue_op = q.enqueue([train_input_single, train_gt_single]) #enqueue로 train_input 과 train_gt
     
-		train_input, train_gt	= q.dequeue_many(BATCH_SIZE) #BATCH_SIZE만큼 뽑아서 train_input 과 train_gt에 저장 train_gt는 dataset에서 blur처리안한 image. train_input은 줄여서 blur했다가 다시 resize로 키운거 interpolated는됨.
+		train_input, train_gt	= q.dequeue_many(BATCH_SIZE) 
     
 		### WITH ASYNCHRONOUS DATA LOADING ###
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':  #VDSR.py에서만 실행되도록
 
 	global_step 	= tf.Variable(0, trainable=False)
 	learning_rate 	= tf.train.exponential_decay(BASE_LR, global_step*BATCH_SIZE, len(train_list)*LR_STEP_SIZE, LR_RATE, staircase=True)
-    #학습 속도 조절 (BASE_LR =starter_learning_rate(최초 학습시 사용될 learning_rate), global_step=현재 학습 횟수*BATCH_SIZE만큼, len(train_list)*LR_STEP*SIZE= 총 학습 횟수, LR_RATE= 얼마나 rate가 감소될것인가? , staircase=True (이산적으로 학습 속도 감속 유무), 즉, true일때 decay_rate (4번째 파라미터에 (global_step/ decay_steps)의 승수가 적용)
+    
 	tf.summary.scalar("learning rate", learning_rate)
 
 	optimizer = tf.train.AdamOptimizer(learning_rate)#tf.train.MomentumOptimizer(learning_rate, 0.9)   #Adam optimizer 사용
@@ -124,7 +124,7 @@ if __name__ == '__main__':  #VDSR.py에서만 실행되도록
 
 	saver = tf.train.Saver(weights, max_to_keep=0)
 
-	shuffle(train_list) #train_list를 무작위로 섞는다
+	shuffle(train_list) 
 	config = tf.ConfigProto()
 	#config.operation_timeout_in_ms=10000
 
